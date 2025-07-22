@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TURISAGO - Dashboard BI</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .dashboard-container {
+            padding: 20px;
+        }
+        .kpi-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .kpi-label {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+        .trend-up {
+            color: #27ae60;
+        }
+        .trend-down {
+            color: #e74c3c;
+        }
+        .trend-stable {
+            color: #f39c12;
+        }
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> TURISAGO Dashboard</h1>
+            <p>Inteligencia de Negocios en Tiempo Real</p>
+        </div>
+
+        <div id="loading" class="loading">
+            <i class="fas fa-spinner fa-spin fa-3x"></i>
+            <p>Cargando datos...</p>
+        </div>
+
+        <div id="dashboard" style="display: none;">
+            <!-- KPI Cards -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="kpi-card">
+                        <div class="kpi-label">
+                            <i class="fas fa-bed"></i> Ocupación Hotelera
+                        </div>
+                        <div class="kpi-value" id="ocupacion-value">--</div>
+                        <div class="trend-up" id="ocupacion-trend">
+                            <i class="fas fa-arrow-up"></i> <span id="ocupacion-change">--</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="kpi-card">
+                        <div class="kpi-label">
+                            <i class="fas fa-money-bill-wave"></i> Ingresos Mensuales
+                        </div>
+                        <div class="kpi-value" id="ingresos-value">--</div>
+                        <div class="trend-up" id="ingresos-trend">
+                            <i class="fas fa-arrow-up"></i> <span id="ingresos-change">--</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="kpi-card">
+                        <div class="kpi-label">
+                            <i class="fas fa-star"></i> Satisfacción Cliente
+                        </div>
+                        <div class="kpi-value" id="satisfaccion-value">--</div>
+                        <div class="trend-stable" id="satisfaccion-trend">
+                            <i class="fas fa-minus"></i> <span id="satisfaccion-change">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h4><i class="fas fa-chart-bar"></i> Ocupación Hotelera</h4>
+                        <div id="ocupacion-chart"></div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h4><i class="fas fa-chart-line"></i> Ingresos Mensuales</h4>
+                        <div id="ingresos-chart"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="chart-container">
+                        <h4><i class="fas fa-chart-pie"></i> Satisfacción de Clientes</h4>
+                        <div id="satisfaccion-chart"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Stats -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="chart-container">
+                        <h4><i class="fas fa-database"></i> Estadísticas Generales</h4>
+                        <div class="row" id="stats-container">
+                            <!-- Stats will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Base URL
+        const API_BASE = 'http://localhost:8000/api';
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                const response = await fetch(`${API_BASE}/kpi/all`);
+                const data = await response.json();
+                
+                if (data.kpis) {
+                    updateKPIs(data.kpis);
+                    createCharts(data.kpis);
+                }
+                
+                // Load stats
+                loadStats();
+                
+                // Hide loading, show dashboard
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                document.getElementById('loading').innerHTML = `
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning"></i>
+                    <p>Error al cargar datos. Verifica que el servidor esté corriendo.</p>
+                `;
+            }
+        }
+
+        // Update KPI cards
+        function updateKPIs(kpis) {
+            kpis.forEach(kpi => {
+                const name = kpi.kpi_name.toLowerCase();
+                const valueElement = document.getElementById(`${name.split(' ')[0]}-value`);
+                const trendElement = document.getElementById(`${name.split(' ')[0]}-trend`);
+                const changeElement = document.getElementById(`${name.split(' ')[0]}-change`);
+                
+                if (valueElement) {
+                    valueElement.textContent = kpi.current_value + ' ' + kpi.unit;
+                }
+                
+                if (trendElement && changeElement) {
+                    const trend = kpi.trend;
+                    const icon = trend === 'up' ? 'fa-arrow-up' : 
+                               trend === 'down' ? 'fa-arrow-down' : 'fa-minus';
+                    const color = trend === 'up' ? 'trend-up' : 
+                                trend === 'down' ? 'trend-down' : 'trend-stable';
+                    
+                    trendElement.className = color;
+                    trendElement.innerHTML = `<i class="fas ${icon}"></i> <span>${trend}</span>`;
+                }
+            });
+        }
+
+        // Create charts
+        function createCharts(kpis) {
+            // Ocupación chart
+            const ocupacion = kpis.find(k => k.kpi_name.includes('Ocupación'));
+            if (ocupacion) {
+                const trace = {
+                    x: ocupacion.data.labels,
+                    y: ocupacion.data.values,
+                    type: 'bar',
+                    marker: {
+                        color: 'rgba(52, 152, 219, 0.8)',
+                        line: {
+                            color: 'rgba(52, 152, 219, 1)',
+                            width: 1
+                        }
+                    }
+                };
+                
+                const layout = {
+                    title: 'Ocupación Hotelera Mensual',
+                    xaxis: { title: 'Mes' },
+                    yaxis: { title: 'Ocupación (%)' },
+                    height: 400
+                };
+                
+                Plotly.newPlot('ocupacion-chart', [trace], layout);
+            }
+
+            // Ingresos chart
+            const ingresos = kpis.find(k => k.kpi_name.includes('Ingresos'));
+            if (ingresos) {
+                const trace = {
+                    x: ingresos.data.labels,
+                    y: ingresos.data.values,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    line: {
+                        color: 'rgba(46, 204, 113, 0.8)',
+                        width: 3
+                    },
+                    marker: {
+                        color: 'rgba(46, 204, 113, 1)',
+                        size: 8
+                    }
+                };
+                
+                const layout = {
+                    title: 'Ingresos Mensuales',
+                    xaxis: { title: 'Mes' },
+                    yaxis: { title: 'Ingresos (Bs)' },
+                    height: 400
+                };
+                
+                Plotly.newPlot('ingresos-chart', [trace], layout);
+            }
+
+            // Satisfacción chart
+            const satisfaccion = kpis.find(k => k.kpi_name.includes('Satisfacción'));
+            if (satisfaccion) {
+                const trace = {
+                    x: satisfaccion.data.labels,
+                    y: satisfaccion.data.values,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    line: {
+                        color: 'rgba(241, 196, 15, 0.8)',
+                        width: 3
+                    },
+                    marker: {
+                        color: 'rgba(241, 196, 15, 1)',
+                        size: 8
+                    }
+                };
+                
+                const layout = {
+                    title: 'Satisfacción de Clientes',
+                    xaxis: { title: 'Mes' },
+                    yaxis: { title: 'Satisfacción (/5)' },
+                    height: 400
+                };
+                
+                Plotly.newPlot('satisfaccion-chart', [trace], layout);
+            }
+        }
+
+        // Load statistics
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE}/data/stats`);
+                const stats = await response.json();
+                
+                const statsContainer = document.getElementById('stats-container');
+                statsContainer.innerHTML = `
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-users fa-2x text-primary"></i>
+                            <h5>Total Clientes</h5>
+                            <h3>${stats.total_clientes?.toLocaleString() || '--'}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-calendar-check fa-2x text-success"></i>
+                            <h5>Total Reservas</h5>
+                            <h3>${stats.total_reservas?.toLocaleString() || '--'}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-map-marker-alt fa-2x text-warning"></i>
+                            <h5>Total Destinos</h5>
+                            <h3>${stats.total_destinos || '--'}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-star fa-2x text-info"></i>
+                            <h5>Satisfacción Promedio</h5>
+                            <h3>${stats.promedio_satisfaccion || '--'}/5</h3>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadDashboard, 30000);
+
+        // Load dashboard on page load
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+</body>
+</html> 

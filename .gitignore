@@ -1,0 +1,9 @@
+# Archivos y carpetas a ignorar
+cliente-service/target/
+*.jar
+# Otros típicos
+node_modules/
+dist/
+build/
+.DS_Store
+.env 

@@ -1,0 +1,179 @@
+type Cliente {
+    id: ID!
+    nombre: String!
+    apellidos: String!
+    documento: String!
+    direccion: String
+    telefono: String
+    email: String!
+    password: String!
+    activo: Boolean!
+}
+
+type Reserva {
+    id: ID!
+    clienteId: ID!
+    fecha: String!
+    destinoId: ID!
+    monto: Float!
+}
+
+type Destino {
+    id: ID!
+    nombre: String!
+    descripcion: String!
+    ubicacion: String!
+    precioBase: Float!
+    cupos: Int!
+    activo: Boolean!
+}
+
+type Factura {
+    id: ID!
+    fecha: String!
+    clienteId: ID!
+    montoTotal: Float!
+    estado: String!
+    metodoPago: String
+    pagos: [Pago]
+}
+
+type Pago {
+    id: ID!
+    facturaId: ID!
+    fecha: String!
+    monto: Float!
+    metodo: String
+    estado: String!
+}
+
+type Transaccion {
+    id: ID!
+    tipo: String!
+    fecha: String!
+    monto: Float!
+    descripcion: String
+    referenciaId: ID
+    referenciaTipo: String
+}
+
+type Alojamiento {
+    id: ID!
+    nombre: String!
+    tipo: String!
+    descripcion: String
+    ubicacion: String!
+    servicios: String
+    activo: Boolean!
+    habitaciones: [Habitacion]
+}
+
+type Habitacion {
+    id: ID!
+    alojamientoId: ID!
+    nombre: String!
+    tipo: String!
+    capacidad: Int!
+    precioNoche: Float!
+    descripcion: String
+    disponible: Boolean!
+    alojamiento: Alojamiento
+}
+
+type ReservaAlojamiento {
+    id: ID!
+    habitacionId: ID!
+    clienteId: ID!
+    fechaInicio: String!
+    fechaFin: String!
+    montoTotal: Float!
+    estado: String!
+    habitacion: Habitacion
+    cliente: Cliente
+}
+
+enum Rol {
+    ADMIN
+    OPERADOR
+    CLIENTE
+}
+
+type Usuario {
+    id: ID!
+    nombre: String!
+    email: String!
+    password: String!
+    rol: Rol!
+    activo: Boolean!
+}
+
+type LoginResponse {
+    success: Boolean!
+    message: String
+    usuario: Usuario
+    token: String
+}
+
+type Query {
+    clientes: [Cliente!]!
+    clientesActivos: [Cliente!]!
+    clientePorId(id: ID!): Cliente
+    clientePorEmail(email: String!): Cliente
+    reservas: [Reserva]
+    reservaPorId(id: ID!): Reserva
+    totalReservasPorCliente(clienteNombre: String!): Int
+    ingresosPorDestino(destino: String!): Float
+    reservasPorMes(year: Int!, month: Int!): Int
+    destinos: [Destino!]!
+    destinoPorId(id: ID!): Destino
+    facturas: [Factura]
+    pagos: [Pago]
+    transacciones: [Transaccion]
+    facturasPorCliente(clienteId: ID!): [Factura]
+    ingresosPorPeriodo(desde: String!, hasta: String!): Float
+    alojamientos: [Alojamiento!]!
+    alojamientoPorId(id: ID!): Alojamiento
+    habitaciones(alojamientoId: ID): [Habitacion!]!
+    habitacionPorId(id: ID!): Habitacion
+    reservasAlojamiento(clienteId: ID): [ReservaAlojamiento!]!
+    reservaAlojamientoPorId(id: ID!): ReservaAlojamiento
+    usuarios: [Usuario!]!
+    usuarioPorId(id: ID!): Usuario
+    usuarioPorEmail(email: String!): Usuario
+    login(email: String!, password: String!): LoginResponse
+    debugPassword(email: String!): String
+    usuariosPorRol(rol: Rol!): [Usuario!]!
+}
+
+type Mutation {
+    crearCliente(nombre: String!, apellidos: String!, documento: String!, direccion: String, telefono: String, email: String!, password: String!): Cliente
+    actualizarCliente(id: ID!, nombre: String!, apellidos: String!, documento: String!, direccion: String, telefono: String, email: String!): Cliente
+    eliminarCliente(id: ID!): Boolean
+    loginCliente(email: String!, password: String!): Cliente
+    verificarEmailCliente(email: String!): Boolean
+    verificarDocumentoCliente(documento: String!): Boolean
+    crearReserva(clienteId: ID!, fecha: String!, destinoId: ID!, monto: Float!): Reserva
+    actualizarReserva(id: ID!, clienteId: ID!, fecha: String!, destinoId: ID!, monto: Float!): Reserva
+    eliminarReserva(id: ID!): Boolean
+    crearDestino(nombre: String!, descripcion: String!, ubicacion: String!, precioBase: Float!, cupos: Int!, activo: Boolean!): Destino
+    actualizarDestino(id: ID!, nombre: String!, descripcion: String!, ubicacion: String!, precioBase: Float!, cupos: Int!, activo: Boolean!): Destino
+    eliminarDestino(id: ID!): Boolean
+    crearFactura(clienteId: ID!, montoTotal: Float!, metodoPago: String): Factura
+    registrarPago(facturaId: ID!, monto: Float!, metodo: String): Pago
+    crearTransaccion(tipo: String!, fecha: String!, monto: Float!, descripcion: String, referenciaId: ID, referenciaTipo: String): Transaccion
+    actualizarEstadoFactura(id: ID!, estado: String!): Factura
+    crearAlojamiento(nombre: String!, tipo: String!, descripcion: String, ubicacion: String!, servicios: String, activo: Boolean!): Alojamiento
+    actualizarAlojamiento(id: ID!, nombre: String!, tipo: String!, descripcion: String, ubicacion: String!, servicios: String, activo: Boolean!): Alojamiento
+    eliminarAlojamiento(id: ID!): Boolean
+    crearHabitacion(alojamientoId: ID!, nombre: String!, tipo: String!, capacidad: Int!, precioNoche: Float!, descripcion: String, disponible: Boolean!): Habitacion
+    actualizarHabitacion(id: ID!, alojamientoId: ID!, nombre: String!, tipo: String!, capacidad: Int!, precioNoche: Float!, descripcion: String, disponible: Boolean!): Habitacion
+    eliminarHabitacion(id: ID!): Boolean
+    crearReservaAlojamiento(habitacionId: ID!, clienteId: ID!, fechaInicio: String!, fechaFin: String!, montoTotal: Float!, estado: String!): ReservaAlojamiento
+    actualizarReservaAlojamiento(id: ID!, habitacionId: ID!, clienteId: ID!, fechaInicio: String!, fechaFin: String!, montoTotal: Float!, estado: String!): ReservaAlojamiento
+    eliminarReservaAlojamiento(id: ID!): Boolean
+    crearUsuario(nombre: String!, apellidos: String!, documento: String!, email: String!, password: String!, rol: Rol!, activo: Boolean!): Usuario
+    actualizarUsuario(id: ID!, nombre: String!, email: String!, password: String!, rol: Rol!, activo: Boolean!): Usuario
+    eliminarUsuario(id: ID!): Boolean
+    actualizarFcmToken(id: ID!, fcmToken: String!): Usuario
+}
+
