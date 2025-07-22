@@ -1,3 +1,10 @@
+# Archivos de credenciales y secrets
+*.json
+*.key
+*.pem
+cliente-service/src/main/resources/firebase/
+turisago_app/android/app/google-services.json
+
 # Archivos y carpetas a ignorar
 cliente-service/target/
 *.jar
