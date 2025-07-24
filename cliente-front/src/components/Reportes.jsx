@@ -37,7 +37,7 @@ export default function Reportes() {
             {loadingTotal ? <Text>Cargando...</Text> :
               calledTotal && dataTotal && (dataTotal.totalReservasPorCliente !== null && dataTotal.totalReservasPorCliente !== undefined)
                 ? <Text strong>Total: {dataTotal.totalReservasPorCliente}</Text>
-                : calledTotal && <Text type="warning">No se encontraron reservas para este cliente.</Text>
+                : calledTotal && <Text type="danger">No se encontraron reservas para este cliente. Verifica el nombre o que existan reservas.</Text>
             }
           </Space>
         </Card>
@@ -58,7 +58,7 @@ export default function Reportes() {
             {loadingIngresos ? <Text>Cargando...</Text> :
               calledIngresos && dataIngresos && (dataIngresos.ingresosPorDestino !== null && dataIngresos.ingresosPorDestino !== undefined)
                 ? <Text strong>Ingresos: Bs {dataIngresos.ingresosPorDestino}</Text>
-                : calledIngresos && <Text type="warning">No hay ingresos registrados para este destino.</Text>
+                : calledIngresos && <Text type="danger">No hay ingresos registrados para este destino. Verifica el nombre o que existan reservas.</Text>
             }
           </Space>
         </Card>
@@ -91,7 +91,7 @@ export default function Reportes() {
             {loadingMes ? <Text>Cargando...</Text> :
               calledMes && dataMes && (dataMes.reservasPorMes !== null && dataMes.reservasPorMes !== undefined)
                 ? <Text strong>Reservas: {dataMes.reservasPorMes}</Text>
-                : calledMes && <Text type="warning">No se encontraron reservas para este mes.</Text>
+                : calledMes && <Text type="danger">No se encontraron reservas para este mes. Verifica el año y mes ingresados.</Text>
             }
           </Space>
         </Card>

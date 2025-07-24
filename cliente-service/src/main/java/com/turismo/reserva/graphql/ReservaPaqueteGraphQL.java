@@ -18,6 +18,7 @@ import com.turismo.reserva.model.Factura;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
 
 @Controller
 public class ReservaPaqueteGraphQL {
@@ -49,7 +50,7 @@ public class ReservaPaqueteGraphQL {
             .orElseThrow(() -> new RuntimeException("Paquete no encontrado"));
         reserva.setCliente(cliente);
         reserva.setPaquete(paquete);
-        reserva.setFechaReserva(input.getFechaReserva());
+        reserva.setFechaReserva(LocalDate.parse(input.getFechaReserva()));
         reserva.setMonto(input.getMonto());
         reserva.setEstado(input.getEstado());
 

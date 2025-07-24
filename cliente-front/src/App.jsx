@@ -75,6 +75,7 @@ const AppContent = () => {
     // Solo OPERADOR puede ver gestión de clientes y estadísticas
     if (hasRole('OPERADOR')) {
       items.push(
+        { key: 'finanzas', icon: <DollarOutlined />, label: 'Finanzas' },
         { key: 'gestionclientes', icon: <MobileOutlined />, label: 'Gestión Clientes App' },
         { key: 'alojamiento', icon: <HomeOutlined />, label: 'Alojamiento' },
         { key: 'dashboardbi', icon: <BarChartOutlined />, label: 'Dashboard BI' },

@@ -41,4 +41,14 @@ public class ReservaPaqueteService {
     public void delete(Long id) {
         reservaRepo.deleteById(id);
     }
+
+    public int countByClienteId(Long clienteId) {
+        return reservaRepo.findByClienteId(clienteId).size();
+    }
+    public double sumMontoByPaqueteId(Long paqueteId) {
+        return reservaRepo.findByPaqueteId(paqueteId).stream().mapToDouble(ReservaPaquete::getMonto).sum();
+    }
+    public int countByYearAndMonth(int year, int month) {
+        return reservaRepo.findByYearAndMonth(year, month).size();
+    }
 } 

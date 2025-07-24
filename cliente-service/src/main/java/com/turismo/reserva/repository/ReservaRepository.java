@@ -15,7 +15,7 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     
     @Query(value = "SELECT COUNT(*) FROM reserva r " +
                    "JOIN cliente c ON r.cliente_id = c.id " +
-                   "WHERE CONCAT(c.nombre, ' ', COALESCE(c.apellidos, '')) LIKE %:clienteNombre%", 
+                   "WHERE LOWER(TRIM(CONCAT(c.nombre, ' ', COALESCE(c.apellidos, '')))) LIKE LOWER(CONCAT('%', TRIM(:clienteNombre), '%'))", 
            nativeQuery = true)
     int countByClienteNombre(@Param("clienteNombre") String clienteNombre);
     
