@@ -114,6 +114,30 @@ type LoginResponse {
     token: String
 }
 
+# Paquete Turístico
+
+type PaqueteTuristico {
+    id: ID!
+    nombre: String!
+    descripcion: String!
+    precio: Float!
+    fechaInicio: String!
+    fechaFin: String!
+    cupos: Int!
+    destino: Destino!
+    serviciosIncluidos: String
+    activo: Boolean!
+}
+
+type ReservaPaquete {
+    id: ID!
+    cliente: Cliente!
+    paquete: PaqueteTuristico!
+    fechaReserva: String!
+    monto: Float!
+    estado: String!
+}
+
 type Query {
     clientes: [Cliente!]!
     clientesActivos: [Cliente!]!
@@ -143,6 +167,10 @@ type Query {
     login(email: String!, password: String!): LoginResponse
     debugPassword(email: String!): String
     usuariosPorRol(rol: Rol!): [Usuario!]!
+    paquetesTuristicos: [PaqueteTuristico]
+    paqueteTuristico(id: ID!): PaqueteTuristico
+    reservasPaquete: [ReservaPaquete]
+    reservaPaquete(id: ID!): ReservaPaquete
 }
 
 type Mutation {
@@ -175,5 +203,29 @@ type Mutation {
     actualizarUsuario(id: ID!, nombre: String!, email: String!, password: String!, rol: Rol!, activo: Boolean!): Usuario
     eliminarUsuario(id: ID!): Boolean
     actualizarFcmToken(id: ID!, fcmToken: String!): Usuario
+    crearPaqueteTuristico(input: PaqueteTuristicoInput!): PaqueteTuristico
+    eliminarPaqueteTuristico(id: ID!): Boolean
+    reservarPaquete(input: ReservaPaqueteInput!): ReservaPaquete
+    cancelarReservaPaquete(id: ID!): Boolean
+}
+
+input PaqueteTuristicoInput {
+    nombre: String!
+    descripcion: String!
+    precio: Float!
+    fechaInicio: String!
+    fechaFin: String!
+    cupos: Int!
+    destinoId: ID!
+    serviciosIncluidos: String
+    activo: Boolean
+}
+
+input ReservaPaqueteInput {
+    clienteId: ID!
+    paqueteId: ID!
+    fechaReserva: String!
+    monto: Float!
+    estado: String!
 }
 

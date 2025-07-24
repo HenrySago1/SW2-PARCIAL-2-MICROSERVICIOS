@@ -24,6 +24,8 @@ import Reportes from './components/Reportes';
 import ReservasAlojamiento from './components/ReservasAlojamiento';
 import TestConnection from './components/TestConnection';
 import Usuarios from './components/Usuarios';
+import PaquetesTuristicos from './components/PaquetesTuristicos';
+import ReservasPaquete from './components/ReservasPaquete';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -51,6 +53,9 @@ const AppContent = () => {
     if (hasAnyRole(['ADMIN', 'OPERADOR'])) {
       items.push({ key: 'destinos', icon: <EnvironmentOutlined />, label: 'Destinos' });
       items.push({ key: 'habitaciones', icon: <HomeOutlined />, label: 'Habitaciones' });
+      // NUEVO: Paquetes y Reservas de Paquetes
+      items.push({ key: 'paquetes', icon: <BookOutlined />, label: 'Paquetes Turísticos' });
+      items.push({ key: 'reservaspaquete', icon: <BookOutlined />, label: 'Reservas de Paquetes' });
     }
 
     // Solo ADMIN puede ver reportes, finanzas, alojamiento, usuarios y dashboard BI
@@ -188,7 +193,7 @@ const AppContent = () => {
           alignItems: 'center',
           padding: '0 24px',
         }}>
-          <div>Sistema de Gestión de Microturismo</div>
+          <div>Sistema Integral de Gestion Turistica con Microservicios</div>
           <Dropdown
             menu={{ items: userMenuItems }}
             placement="bottomRight"
@@ -222,6 +227,8 @@ const AppContent = () => {
             {selected === 'gestionclientes' && 'Gestión de Clientes App Móvil'}
             {selected === 'estadisticasclientes' && 'Estadísticas de Clientes App Móvil'}
             {selected === 'dashboardbi' && 'Dashboard de Inteligencia de Negocios'}
+            {selected === 'paquetes' && 'Gestión de Paquetes Turísticos'}
+            {selected === 'reservaspaquete' && 'Gestión de Reservas de Paquetes'}
           </Title>
           
           <ProtectedRoute>
@@ -236,6 +243,8 @@ const AppContent = () => {
             {selected === 'gestionclientes' && <GestionClientes />}
             {selected === 'estadisticasclientes' && <EstadisticasClientes />}
             {selected === 'dashboardbi' && <KpiDashboard />}
+            {selected === 'paquetes' && <PaquetesTuristicos />}
+            {selected === 'reservaspaquete' && <ReservasPaquete />}
           </ProtectedRoute>
         </Content>
         <Footer style={{ textAlign: 'center', background: '#e6f7ff', color: '#1890ff', fontWeight: 500, letterSpacing: 1 }}>

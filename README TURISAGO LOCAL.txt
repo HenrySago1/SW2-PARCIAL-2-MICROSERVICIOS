@@ -30,3 +30,16 @@ npm run dev
 
 APP MOVIL
 Correr en el celular misma wifi
+
+
+usuarios para probar
+admin@turisago.com
+admin123
+
+operador@turisago.com  
+admin123
+
+app MOVIL
+henry@turisago.com
+123456
+
