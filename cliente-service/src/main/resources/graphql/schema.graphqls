@@ -188,6 +188,7 @@ type Mutation {
     eliminarDestino(id: ID!): Boolean
     crearFactura(clienteId: ID!, montoTotal: Float!, metodoPago: String): Factura
     registrarPago(facturaId: ID!, monto: Float!, metodo: String): Pago
+    registrarPagoCompleto(facturaId: ID!, monto: Float!, metodo: String!, fecha: String): Pago
     crearTransaccion(tipo: String!, fecha: String!, monto: Float!, descripcion: String, referenciaId: ID, referenciaTipo: String): Transaccion
     actualizarEstadoFactura(id: ID!, estado: String!): Factura
     crearAlojamiento(nombre: String!, tipo: String!, descripcion: String, ubicacion: String!, servicios: String, activo: Boolean!): Alojamiento

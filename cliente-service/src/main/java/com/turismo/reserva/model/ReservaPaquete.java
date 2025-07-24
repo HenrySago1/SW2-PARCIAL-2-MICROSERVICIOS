@@ -20,6 +20,8 @@ public class ReservaPaquete {
     private Double monto;
     private String estado;
 
+    private Long facturaId;
+
     // Getters y setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -33,4 +35,6 @@ public class ReservaPaquete {
     public void setMonto(Double monto) { this.monto = monto; }
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+    public Long getFacturaId() { return facturaId; }
+    public void setFacturaId(Long facturaId) { this.facturaId = facturaId; }
 } 

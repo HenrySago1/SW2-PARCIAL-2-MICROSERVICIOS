@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, gql } from '@apollo/client';
+import { useQuery, useMutation, gql, useLazyQuery } from '@apollo/client';
 import { Button, Card, Form, Input, InputNumber, Modal, Table, Tag, DatePicker, message, Select } from 'antd';
+import { useNavigate } from 'react-router-dom';
 
 const GET_RESERVAS = gql`
   query {
@@ -37,13 +38,23 @@ const GET_PAQUETES = gql`
   }
 `;
 
+const GET_FACTURA = gql`
+  query($id: ID!) {
+    facturas { id fecha clienteId montoTotal estado metodoPago }
+  }
+`;
+
 const ReservasPaquete = () => {
   const { data, loading, refetch } = useQuery(GET_RESERVAS);
   const { data: clientesData } = useQuery(GET_CLIENTES);
   const { data: paquetesData } = useQuery(GET_PAQUETES);
   const [reservarPaquete] = useMutation(RESERVAR_PAQUETE);
+  const [getFactura, { data: facturaData }] = useLazyQuery(GET_FACTURA);
   const [modalVisible, setModalVisible] = useState(false);
+  const [facturaModal, setFacturaModal] = useState(false);
+  const [facturaInfo, setFacturaInfo] = useState(null);
   const [form] = Form.useForm();
+  const navigate = useNavigate();
 
   const handleCreate = async (values) => {
     console.log('Valores del formulario:', values);
@@ -56,11 +67,21 @@ const ReservasPaquete = () => {
         estado: 'PENDIENTE'
       };
       console.log('Input enviado a la mutación:', input);
-      await reservarPaquete({ variables: { input } });
+      const res = await reservarPaquete({ variables: { input } });
+      // Buscar la factura generada
+      if (res.data?.reservarPaquete?.id) {
+        // Buscar la reserva para obtener el id de la factura
+        await refetch();
+        const reserva = (data?.reservasPaquete || []).find(r => r.id === res.data.reservarPaquete.id);
+        if (reserva && reserva.facturaId) {
+          // Buscar la factura por id
+          getFactura({ variables: { id: reserva.facturaId } });
+          setFacturaModal(true);
+        }
+      }
       message.success('Reserva realizada exitosamente');
       setModalVisible(false);
       form.resetFields();
-      refetch();
     } catch (error) {
       console.error('Error al reservar paquete:', error);
       message.error('Error al reservar paquete: ' + (error.message || ''));
@@ -101,6 +122,24 @@ const ReservasPaquete = () => {
             <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
         </Form>
+      </Modal>
+      <Modal open={facturaModal} onCancel={() => setFacturaModal(false)} footer={null} title="Factura generada">
+        {facturaData?.facturas && facturaData.facturas.length > 0 ? (
+          <div>
+            <p><b>ID:</b> {facturaData.facturas[0].id}</p>
+            <p><b>Fecha:</b> {facturaData.facturas[0].fecha}</p>
+            <p><b>Cliente ID:</b> {facturaData.facturas[0].clienteId}</p>
+            <p><b>Monto Total:</b> ${facturaData.facturas[0].montoTotal}</p>
+            <p><b>Estado:</b> {facturaData.facturas[0].estado}</p>
+            <p><b>Método de Pago:</b> {facturaData.facturas[0].metodoPago || '-'}</p>
+            <Button type="primary" style={{marginTop:16}} onClick={() => {
+              setFacturaModal(false);
+              navigate('/finanzas', { state: { facturaId: facturaData.facturas[0].id } });
+            }}>
+              Ir a pagar factura
+            </Button>
+          </div>
+        ) : <p>No se pudo obtener la factura.</p>}
       </Modal>
     </Card>
   );

@@ -21,6 +21,19 @@ public class ReservaPaqueteService {
         return reservaRepo.findById(id);
     }
 
+    public Optional<ReservaPaquete> findByFacturaId(Long facturaId) {
+        return reservaRepo.findByFacturaId(facturaId);
+    }
+    public ReservaPaquete actualizarEstadoPorFacturaId(Long facturaId, String estado) {
+        Optional<ReservaPaquete> opt = reservaRepo.findByFacturaId(facturaId);
+        if (opt.isPresent()) {
+            ReservaPaquete r = opt.get();
+            r.setEstado(estado);
+            return reservaRepo.save(r);
+        }
+        return null;
+    }
+
     public ReservaPaquete save(ReservaPaquete reserva) {
         return reservaRepo.save(reserva);
     }

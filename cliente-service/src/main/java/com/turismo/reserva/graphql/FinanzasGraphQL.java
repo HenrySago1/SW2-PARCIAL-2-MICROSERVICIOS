@@ -13,17 +13,20 @@ import com.turismo.reserva.model.Transaccion;
 import com.turismo.reserva.service.FacturaService;
 import com.turismo.reserva.service.PagoService;
 import com.turismo.reserva.service.TransaccionService;
+import com.turismo.reserva.service.ReservaPaqueteService;
 
 @Controller
 public class FinanzasGraphQL {
     private final FacturaService facturaService;
     private final PagoService pagoService;
     private final TransaccionService transaccionService;
+    private final ReservaPaqueteService reservaPaqueteService;
 
-    public FinanzasGraphQL(FacturaService facturaService, PagoService pagoService, TransaccionService transaccionService) {
+    public FinanzasGraphQL(FacturaService facturaService, PagoService pagoService, TransaccionService transaccionService, ReservaPaqueteService reservaPaqueteService) {
         this.facturaService = facturaService;
         this.pagoService = pagoService;
         this.transaccionService = transaccionService;
+        this.reservaPaqueteService = reservaPaqueteService;
     }
 
     // Queries
@@ -59,7 +62,42 @@ public class FinanzasGraphQL {
         p.setMonto(monto);
         p.setMetodo(metodo);
         p.setEstado("COMPLETADO");
-        return pagoService.save(p);
+        Pago savedPago = pagoService.save(p);
+        // Actualizar estado de factura y reserva si corresponde
+        Factura factura = facturaService.findById(facturaId);
+        double totalPagado = pagoService.findByFacturaId(facturaId).stream().mapToDouble(Pago::getMonto).sum();
+        if (factura != null && totalPagado >= factura.getMontoTotal()) {
+            factura.setEstado("PAGADO");
+            facturaService.save(factura);
+            reservaPaqueteService.actualizarEstadoPorFacturaId(facturaId, "PAGADO");
+        }
+        return savedPago;
+    }
+
+    @MutationMapping
+    public Pago registrarPagoCompleto(@Argument Long facturaId, @Argument Double monto, @Argument String metodo, @Argument String fecha) {
+        Factura factura = facturaService.findById(facturaId);
+        if (factura == null) throw new RuntimeException("Factura no encontrada");
+
+        Pago pago = new Pago();
+        pago.setFacturaId(facturaId);
+        pago.setMonto(monto);
+        pago.setMetodo(metodo);
+        pago.setEstado("COMPLETADO");
+        if (fecha != null) {
+            pago.setFecha(java.time.LocalDate.parse(fecha));
+        }
+
+        Pago savedPago = pagoService.save(pago);
+
+        // Si el monto pagado cubre el total, actualiza la factura y la reserva
+        double totalPagado = pagoService.findByFacturaId(facturaId).stream().mapToDouble(Pago::getMonto).sum();
+        if (totalPagado >= factura.getMontoTotal()) {
+            factura.setEstado("PAGADO");
+            facturaService.save(factura);
+            reservaPaqueteService.actualizarEstadoPorFacturaId(facturaId, "PAGADO");
+        }
+        return savedPago;
     }
 
     @MutationMapping

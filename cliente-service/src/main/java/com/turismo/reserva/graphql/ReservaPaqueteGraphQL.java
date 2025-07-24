@@ -13,6 +13,8 @@ import com.turismo.reserva.repository.ClienteRepository;
 import com.turismo.reserva.repository.PaqueteTuristicoRepository;
 import com.turismo.reserva.model.Cliente;
 import com.turismo.reserva.model.PaqueteTuristico;
+import com.turismo.reserva.service.FacturaService;
+import com.turismo.reserva.model.Factura;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +27,8 @@ public class ReservaPaqueteGraphQL {
     private ClienteRepository clienteRepository;
     @Autowired
     private PaqueteTuristicoRepository paqueteTuristicoRepository;
+    @Autowired
+    private FacturaService facturaService;
 
     @QueryMapping
     public List<ReservaPaquete> reservasPaquete() {
@@ -48,6 +52,16 @@ public class ReservaPaqueteGraphQL {
         reserva.setFechaReserva(input.getFechaReserva());
         reserva.setMonto(input.getMonto());
         reserva.setEstado(input.getEstado());
+
+        // Crear factura asociada
+        Factura factura = new Factura();
+        factura.setClienteId(cliente.getId());
+        factura.setMontoTotal(input.getMonto());
+        factura.setEstado("PENDIENTE");
+        factura.setMetodoPago(null); // Se puede actualizar luego
+        Factura facturaGuardada = facturaService.save(factura);
+        reserva.setFacturaId(facturaGuardada.getId());
+
         return reservaService.save(reserva);
     }
 
